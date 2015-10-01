@@ -6,10 +6,11 @@ Parts of this code comes from the fborm project
 """
 
 import getpass
+import contextlib
 import os
 import re
 
-__version__ = (0,1,0)
+__version__ = (0,1,2)
 __version_string__ = '.'.join(str(x) for x in __version__)
 
 __author__ = 'Nicolas Morales'
@@ -70,3 +71,10 @@ def FogBugz(hostname, token=None, username=None, password=None,
         fb.logon(username, password)
     return fb
 
+@contextlib.contextmanager
+def FogBugz_cm(hostname, **kwargs):
+    '''Context manager with logOff functionality'''
+    fb = FogBugz(hostname, **kwargs)
+    yield fb
+
+    fb.logoff()
