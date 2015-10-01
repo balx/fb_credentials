@@ -8,20 +8,19 @@ Parts of this code comes from the fborm project
 import getpass
 import os
 import re
-import fogbugz
 
 __version__ = (0,1,0)
 __version_string__ = '.'.join(str(x) for x in __version__)
 
 __author__ = 'Nicolas Morales'
-__email__ = 'nicolas.morales@nuance.com'
+__email__ = 'portu.github@gmail.com'
 
 def get_credentials(hgrc, hgPrefix, interactive):
     """When credentials are not provided in the constructor, get them from hgrc or prompt user
        hgrc: Path to hgrc file
-       hgPrefix: prefix for user and password. Useful if the hgrc is used for multiple servers 
+       hgPrefix: prefix for user and password. Useful if the hgrc is used for multiple servers
                  with different credentials
-       interactive: If credentials not found in hgrc and thsi is set, prompt the user
+       interactive: If credentials not found in hgrc and this is set, prompt the user
     """
     #Search whether there is an hgrc file. Default: ~/hgrc
     username = None
@@ -45,9 +44,9 @@ def get_credentials(hgrc, hgPrefix, interactive):
     return username, password
 
 def FogBugz(hostname, token=None, username=None, password=None,
-             hgrc=None, hgPrefix='', interactive=True, fbConstructor='fogbugz.FogBugz'):
+            hgrc=None, hgPrefix='', interactive=True, fbConstructor='fogbugz.FogBugz'):
     """Calls the constructor specified by fbConstructor (hence, despite this being a function use CapWords naming convention)
-    
+
        hostname: passed directly to the fbInterface
        token, username, password: input credentials
        hgrc, hgPrefix, interactive: Passed to method get_credentials
@@ -62,7 +61,7 @@ def FogBugz(hostname, token=None, username=None, password=None,
         username, password = get_credentials(hgrc, hgPrefix, interactive)
     if not username and not password: # If still no credentials available, raise
         raise TypeError("You must provide either 'username' and 'password' or token")
-    modName, constructor = fbConstructor.rsplit('.',1)
+    modName, constructor = fbConstructor.rsplit('.', 1)
     fbMod = __import__(modName)
 
     cons = eval('fbMod.' + constructor)
