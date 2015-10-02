@@ -44,14 +44,16 @@ def get_credentials(hgrc, hgPrefix, interactive):
             password = getpass.getpass('password: ')# Same as raw_input but does not print what user types
     return username, password
 
-def FogBugz(hostname, token=None, username=None, password=None,
-            hgrc=None, hgPrefix='', interactive=True, fbConstructor='fogbugz.FogBugz'):
+def FogBugz(hostname, token=None, username=None, password=None, hgrc=None, hgPrefix='',
+            interactive=True, fbConstructor='fogbugz.FogBugz', storeCredentials=False):
     """Calls the constructor specified by fbConstructor (hence, despite this being a function use CapWords naming convention)
 
        hostname: passed directly to the fbInterface
        token, username, password: input credentials
        hgrc, hgPrefix, interactive: Passed to method get_credentials
        fbClassName: Fogbugz classname. Default is fogbugz.FogBugz. Could use fborm.FogBugzORM, for example
+       storeCredentials: If active, create attributes token, username and password. This opens the door to using it for login to other
+                         system, which is convenient, but the programmer can also do what he wants with the password (which is bad).
        TODO: Support passing a list of args to fbClassName constructor
     """
     if token and (username or password):
@@ -69,6 +71,12 @@ def FogBugz(hostname, token=None, username=None, password=None,
     fb = cons(hostname, token=token)
     if username:
         fb.logon(username, password)
+
+    if storeCredentials:
+        fb.token = token
+        fb.username = username
+        fb.password = password
+
     return fb
 
 @contextlib.contextmanager
