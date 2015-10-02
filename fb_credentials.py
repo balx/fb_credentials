@@ -10,7 +10,7 @@ import contextlib
 import os
 import re
 
-__version__ = (0,1,2)
+__version__ = (0,2,0)
 __version_string__ = '.'.join(str(x) for x in __version__)
 
 __author__ = 'Nicolas Morales'
@@ -44,17 +44,17 @@ def get_credentials(hgrc, hgPrefix, interactive):
             password = getpass.getpass('password: ')# Same as raw_input but does not print what user types
     return username, password
 
-def FogBugz(hostname, token=None, username=None, password=None, hgrc=None, hgPrefix='',
-            interactive=True, fbConstructor='fogbugz.FogBugz', storeCredentials=False):
+def FogBugz(fbConstructor, hostname, token=None, username=None, password=None, hgrc=None, hgPrefix='',
+            interactive=True, storeCredentials=False):
     """Calls the constructor specified by fbConstructor (hence, despite this being a function use CapWords naming convention)
 
+       fbConstructor: Fogbugz constructor class. Typically fogbugz.FogBugz, fborm.FogBugzORM or kiln.Kiln
        hostname: passed directly to the fbInterface
        token, username, password: input credentials
        hgrc, hgPrefix, interactive: Passed to method get_credentials
-       fbClassName: Fogbugz classname. Default is fogbugz.FogBugz. Could use fborm.FogBugzORM, for example
        storeCredentials: If active, create attributes token, username and password. This opens the door to using it for login to other
                          system, which is convenient, but the programmer can also do what he wants with the password (which is bad).
-       TODO: Support passing a list of args to fbClassName constructor
+       TODO: Support passing a list of args to fbConstructor
     """
     if token and (username or password):
         raise TypeError("if you supply 'token' you cannot supply 'username' or 'password'")
@@ -64,11 +64,8 @@ def FogBugz(hostname, token=None, username=None, password=None, hgrc=None, hgPre
         username, password = get_credentials(hgrc, hgPrefix, interactive)
     if not username and not password: # If still no credentials available, raise
         raise TypeError("You must provide either 'username' and 'password' or token")
-    modName, constructor = fbConstructor.rsplit('.', 1)
-    fbMod = __import__(modName)
 
-    cons = eval('fbMod.' + constructor)
-    fb = cons(hostname, token=token)
+    fb = fbConstructor(hostname, token=token)
     if username:
         fb.logon(username, password)
 
@@ -80,9 +77,9 @@ def FogBugz(hostname, token=None, username=None, password=None, hgrc=None, hgPre
     return fb
 
 @contextlib.contextmanager
-def FogBugz_cm(hostname, **kwargs):
+def FogBugz_cm(fbConstructor, hostname, **kwargs):
     '''Context manager with logOff functionality'''
-    fb = FogBugz(hostname, **kwargs)
+    fb = FogBugz(fbConstructor, hostname, **kwargs)
     yield fb
 
     fb.logoff()
