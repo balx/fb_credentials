@@ -62,8 +62,8 @@ def FogBugz(fbConstructor, hostname, token=None, username=None, password=None, h
         raise TypeError("You must supply both 'username' and 'password'")
     if not username and not token:
         username, password = get_credentials(hgrc, hgPrefix, interactive)
-    if not username and not password: # If still no credentials available, raise
-        raise TypeError("You must provide either 'username' and 'password' or token")
+        if not username and password: # If still no credentials available, raise
+            raise TypeError("You must provide either 'username' and 'password' or 'token'")
 
     fb = fbConstructor(hostname, token=token)
     if username:
