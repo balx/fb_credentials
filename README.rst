@@ -1,3 +1,7 @@
+.. image:: https://travis-ci.org/portusato/fb_credentials.svg?branch=master
+   :target: https://travis-ci.org/portusato/fb_credentials
+   :alt: Build status of the master branch on Linux
+
 fb_credentials
 ==============
 
