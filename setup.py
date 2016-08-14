@@ -19,7 +19,7 @@ setup(
     # Versions should comply with PEP440.  For a discussion on single-sourcing
     # the version across setup.py and the project code, see
     # https://packaging.python.org/en/latest/single_source_version.html
-    version='0.2.1',
+    version='0.2.2',
     py_modules=['fb_credentials'],
 
     description='Functionality for getting credentials from .hgrc or prompting the user for FogBugz and related interfaces',
@@ -75,10 +75,10 @@ setup(
     # dependencies). You can install these using the following syntax,
     # for example:
     # $ pip install -e .[dev,test]
-    #extras_require={
+    extras_require={
     #    'dev': ['check-manifest'],
-    #    'test': ['coverage'],
-    #},
+        'test': ['nose', 'nose_parameterized', 'mock',],
+    },
 
     # If there are data files included in your packages that need to be
     # installed, specify them here.  If using Python 2.6 or less, then these
