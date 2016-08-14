@@ -10,13 +10,17 @@ import contextlib
 import os
 import re
 
-__version__ = (0,2,1)
+__version__ = (0,2,2)
 __version_string__ = '.'.join(str(x) for x in __version__)
 
 __author__ = 'Nicolas Morales'
 __email__ = 'portu.github@gmail.com'
 
-def get_credentials(hgrc, hgPrefix, interactive):
+def getInput(prompt):
+    '''Wrapper around builtin function raw_input in order to mock it in tests'''    
+    return raw_input(prompt)
+    
+def get_credentials(hgrc=None, hgPrefix='', interactive=True):
     """When credentials are not provided in the constructor, get them from hgrc or prompt user
        hgrc: Path to hgrc file
        hgPrefix: prefix for user and password. Useful if the hgrc is used for multiple servers
@@ -39,7 +43,7 @@ def get_credentials(hgrc, hgPrefix, interactive):
                 password = res.group(1)
     if interactive:
         if not username:
-            username = raw_input('user: ')
+            username = getInput('user: ')
         if not password:
             password = getpass.getpass('password: ')# Same as raw_input but does not print what user types
     return username, password
