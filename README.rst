@@ -20,6 +20,20 @@ import fb_credentials
 fb = fb_credentials.FogBugz('https://YourRepository.com/')
 fb.search(q='53410', cols='ixBug')
 
+Installation
+============
+
+You can download and install using *pip install fb_credentials*. The PyPI URL for this project is: `https://pypi.python.org/pypi/fb-credentials <https://pypi.python.org/pypi/fb-credentials>`_.
+
+Tests
+=====
+
+In order to run the tests you need to install the test dependencies indicated in setup.py.
+
+Tests are stored in folder test and run with *nosetests*.  `Travis <https://travis-ci.org/portusato/fb_credentials>`_ is used for Continous Integration and is connected to the github repository; every new push to the repository triggers the set of tests in Travis. At the top of this README there is a link to Travis that indicates the status of the tests.
+
+Tests need to pass for the different versions of python supported. This is setup in the .travis.yml configuration file. You can do the same locally using tox and the tox.ini file in this repository.
+
 E-mail me
 =========
 
