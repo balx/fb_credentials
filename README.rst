@@ -23,7 +23,11 @@ fb.search(q='53410', cols='ixBug')
 Installation
 ============
 
-You can download and install using *pip install fb_credentials*. The PyPI URL for this project is: `https://pypi.python.org/pypi/fb-credentials <https://pypi.python.org/pypi/fb-credentials>`_.
+You can download and install using:
+
+*pip install fb_credentials*
+
+The PyPI URL for this project is: `https://pypi.python.org/pypi/fb-credentials <https://pypi.python.org/pypi/fb-credentials>`_.
 
 Tests
 =====
