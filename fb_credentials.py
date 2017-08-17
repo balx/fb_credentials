@@ -70,7 +70,7 @@ def validate_token(hostname, token):
                 return True
         except:
             pass # Always catch authentication error and return (other methods may be attempted)
-    print('Failed to use token provided')
+        print('Failed to use token provided')
     return False
 
 def FogBugz(fbConstructor, hostname, token=None, username=None, password=None, fogbugzrc=None,
