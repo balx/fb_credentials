@@ -5,6 +5,7 @@ Parts of this code comes from the fborm project
 ==============================================
 """
 
+from __future__ import print_function
 import getpass
 import contextlib
 import os
@@ -50,10 +51,9 @@ def get_credentials(fogbugzrc=None, fogbugzPrefix='', interactive=True):
     return username, password
 
 def get_token(fogbugzrc=None, fogbugzPrefix=''):
-    """When credentials are not provided in the constructor, get them from fogbugzrc or prompt user
+    """When token is not provided in the constructor, get them from fogbugzrc
        fogbugzrc: Path to fogbugzrc file
-       fogbugzPrefix: prefix for token. Useful if the fogbugzrc is used for multiple servers
-                 with different credentials
+       fogbugzPrefix: prefix for token.
     """
     # Search whether there is an fogbugzrc file. Default: ~/.fogbugzrc
     token = None
@@ -73,12 +73,12 @@ def validate_token(hostname, token):
 
     Returns True for a successful validation.
     """
-    url = hostname + ('/' if hostname[-1] != '/' else '') + "api.asp?cmd=logon&token=" + token
+    url = hostname + "/api.asp?cmd=logon&token=" + token
     try:
         response = urllib2.urlopen(url)
         return token in response.read()
     except Exception as e:
-        print e
+        print(e)
     return False
 
 def FogBugz(fbConstructor, hostname, token=None, username=None, password=None, fogbugzrc=None,
@@ -100,14 +100,15 @@ def FogBugz(fbConstructor, hostname, token=None, username=None, password=None, f
         raise TypeError("If you supply 'token' you cannot supply 'username' or 'password'")
     if (username and not password) or (not username and password):
         raise TypeError("You must supply both 'username' and 'password'")
-    if not token:
-        token = get_token(fogbugzrc, fogbugzPrefix)
-    if token and validate_token(hostname, token):
-        return fbConstructor(hostname, token=token)
-    if not username and not token:
-        username, password = get_credentials(fogbugzrc, fogbugzPrefix, interactive)
-        if not username and password: # If still no credentials available, raise
-            raise TypeError("You must provide either 'username' and 'password' or 'token'")
+    if not username:
+        if not token:
+            token = get_token(fogbugzrc, fogbugzPrefix)
+        if token and validate_token(hostname, token):
+            return fbConstructor(hostname, token=token)
+        else:
+            username, password = get_credentials(fogbugzrc, fogbugzPrefix, interactive)
+            if not username and password: # If still no credentials available, raise
+                raise TypeError("You must provide either 'username' and 'password' or 'token'")
 
     fb = fbConstructor(hostname, token=token)
     if username:
@@ -121,12 +122,12 @@ def FogBugz(fbConstructor, hostname, token=None, username=None, password=None, f
     return fb
 
 @contextlib.contextmanager
-def FogBugz_cm(fbConstructor, hostname, **kwargs):
+def FogBugz_cm(fbConstructor, hostname, logoff=False, **kwargs):
     '''Context manager with logOff functionality'''
     fb = FogBugz(fbConstructor, hostname, **kwargs)
     yield fb
     
-    if kwargs.get('logoff', True):
+    if logoff:
         fb.logoff()
     else:
-        print "Save this token for later: token=%s" % fb._token
+        print("Save this token for later: token=%s" % fb._token)
