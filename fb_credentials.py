@@ -103,7 +103,7 @@ def FogBugz(fbConstructor, hostname, token=None, username=None, password=None, f
             password = get_credential('password', fogbugzrc, fogbugzPrefix, interactive)
         fb = connect(fbConstructor, hostname, username=username, password=password)
     else:
-        token = get_credential('token', fogbugzrc, fogbugzPrefix)
+        token = get_credential('token', fogbugzrc, fogbugzPrefix, interactive=False)
         if validate_token(hostname, token):
             fb = connect(fbConstructor, hostname, token=token)
         else:
