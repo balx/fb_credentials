@@ -24,54 +24,38 @@ __version_string__ = '.'.join(str(x) for x in __version__)
 __author__ = 'Nicolas Morales'
 __email__ = 'portu.github@gmail.com'
 
+CREDENTIALTYPES = ('token', 'username', 'password')
 def get_input(prompt):
     '''Wrapper around builtin function raw_input in order to mock it in tests'''
     return raw_input(prompt)
 
-def get_credentials(fogbugzrc=None, fogbugzPrefix='', interactive=True):
-    """ When credentials are not provided in the constructor, get them from fogbugzrc or prompt user
-        fogbugzrc: Path to fogbugzrc file
-        fogbugzPrefix: prefix for user and password. Useful if the fogbugzrc is used for multiple servers
+def get_credential(credentialtype, fogbugzrc=None, fogbugzprefix='', interactive=True):
+    """ get credential from fogbugzrc or prompt user
+        credentialtype: One in CREDENTIALTYPES
+        fogbugzrc: Path to configuration file
+        fogbugzprefix: prefix for credential. Useful if the fogbugzrc is used for multiple servers
                  with different credentials
-        interactive: If credentials not found in fogbugzrc and this is set, prompt the user
+        interactive: If credentials not found in fogbugzrc and this option is set, prompt the user
     """
-    #Search whether there is an fogbugzrc file. Default: ~/fogbugzrc
-    username = None
-    password = None
+    if credentialtype not in CREDENTIALTYPES:
+        raise ValueError('option credential can only take values {}. Passed: {}'.format(CREDENTIALTYPES, credentialtype))
+    #Search whether there is a fogbugzrc file
     if not fogbugzrc:
         fogbugzrc = os.path.join(os.path.expanduser("~"), '.fogbugzrc')
-    if os.path.isfile(fogbugzrc):
-        for line in open(fogbugzrc):
-            line = line.split('#')[0]
-            if fogbugzPrefix + 'username' in line:
-                res = re.search(r'username\s*=\s*(\S+)', line)
-                username = res.group(1)
-            elif fogbugzPrefix + 'password' in line:
-                res = re.search(r'password\s*=\s*(\S+)', line)
-                password = res.group(1)
-    if interactive:
-        if not username:
-            username = get_input('user: ')
-        if not password:
-            password = getpass.getpass('password: ')# Same as raw_input but hide what user types
-    return username, password
 
-def get_token(fogbugzrc=None, fogbugzPrefix=''):
-    """ When token is not provided in the constructor, get them from fogbugzrc
-        fogbugzrc: Path to fogbugzrc file
-        fogbugzPrefix: prefix for token.
-    """
-    # Search whether there is an fogbugzrc file. Default: ~/.fogbugzrc
-    token = None
-    if not fogbugzrc:
-        fogbugzrc = os.path.join(os.path.expanduser("~"), '.fogbugzrc')
+    credential = None
     if os.path.isfile(fogbugzrc):
         for line in open(fogbugzrc):
             line = line.split('#')[0]
-            if fogbugzPrefix + 'token' in line:
-                res = re.search(r'token\s*=\s*(\S+)', line)
-                token = res.group(1)
-    return token
+            if fogbugzprefix + credentialtype in line:
+                res = re.search(r'{}\s*=\s*(\S+)'.format(credentialtype), line)
+                credential = res.group(1)
+    if not credential and interactive:
+        if credentialtype is 'password':
+            credential = getpass.getpass('password: ')# Same as raw_input but hide what user types
+        else:
+            credential = get_input(credentialtype + ': ')
+    return credential
 
 def validate_token(hostname, token):
     """ Validate the user token.
@@ -96,7 +80,7 @@ def FogBugz(fbConstructor, hostname, token=None, username=None, password=None, f
                        kiln.Kiln
         hostname: passed directly to the fbInterface
         token, username, password: input credentials
-        fogbugzrc, fogbugzPrefix, interactive: Passed to method get_credentials
+        fogbugzrc, fogbugzPrefix, interactive: Passed to method get_credential
         storeCredentials: If active, create attributes token, username and password. This opens the
                           door to using it for login to other system, which is convenient, but the
                           programmer can also do what he wants with the password (which is bad).
@@ -108,11 +92,12 @@ def FogBugz(fbConstructor, hostname, token=None, username=None, password=None, f
         raise TypeError("You must supply both 'username' and 'password'")
     if not username:
         if not token:
-            token = get_token(fogbugzrc, fogbugzPrefix)
+            token = get_credential('token', fogbugzrc, fogbugzPrefix)
         if validate_token(hostname, token):
             return fbConstructor(hostname, token=token)
         else:
-            username, password = get_credentials(fogbugzrc, fogbugzPrefix, interactive)
+            username = get_credential('username', fogbugzrc, fogbugzPrefix, interactive)
+            password = get_credential('password', fogbugzrc, fogbugzPrefix, interactive)
             if not username and password: # If still no credentials available, raise
                 raise TypeError("You must provide either 'username' and 'password' or 'token'")
 

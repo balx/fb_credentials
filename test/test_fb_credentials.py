@@ -19,13 +19,12 @@ def test_FogBugz_raiseIfWrongCredentialOptionsProvided(token, username, password
     nose.tools.assert_raises(TypeError, fb_credentials.FogBugz, '', '', token=token,
                              username=username, password=password)
 
-@mock.patch('fb_credentials.get_credentials')
-def test_FogBugzNoUserNameNorToken(mock_get_credentials):
+@mock.patch('fb_credentials.get_credential', side_effect=['token', 'username', 'pwd'])
+def test_FogBugzNoUserNameNorToken(mock_get_credential):
     mock_fogbugz = mock.Mock()
-    mock_get_credentials.return_value = ['username', 'pwd']
     ret = fb_credentials.FogBugz(mock_fogbugz, 'hostname', storeCredentials=True)
-    mock_get_credentials.assert_called_once()
-    mock_fogbugz.assert_called_once_with('hostname', token=None)
+    nose.tools.assert_equals(mock_get_credential.call_count, 3)
+    mock_fogbugz.assert_called_once_with('hostname', token='token')
     ret.logon.assert_called_once_with('username', 'pwd')
     # Also test storeCredentials
     nose.tools.assert_equals(ret.username, 'username')
@@ -44,13 +43,13 @@ def test_FogBugzWithTokenNoUsername(mock_validate_token):
     mock_fogbugz.assert_called_once_with('hostname', token='uToken')
 
 @mock.patch('fb_credentials.validate_token')
-@mock.patch('fb_credentials.get_credentials')
-def test_FogBugzWithTokenNoUsername(mock_validate_token, mock_get_credentials):
+@mock.patch('fb_credentials.get_credential')
+def test_FogBugzWithTokenNoUsername(mock_validate_token, mock_get_credential):
     mock_fogbugz = mock.Mock()
     mock_validate_token.return_value = False
     ret = fb_credentials.FogBugz(mock_fogbugz, 'hostname', token='uToken')
-    mock_get_credentials.assert_called_once()
-	
+    mock_get_credential.assert_called_once()
+
 @mock.patch('fb_credentials.FogBugz')
 def test_FogBugz_cm(mock_FogBugz):
     with fb_credentials.FogBugz_cm('a', 'b') as cm:
@@ -68,8 +67,8 @@ class test_validate_token(unittest.TestCase):
     def test_validate_token_noToken(self):
         self.assertFalse(fb_credentials.validate_token('host', None))
 
-class test_get_credentials(unittest.TestCase):
-    '''Tests for get_credentials'''
+class test_get_credential(unittest.TestCase):
+    '''Tests for get_credential'''
 
     def setUp(self):
         self.test_dir = tempfile.mkdtemp()
@@ -81,41 +80,25 @@ class test_get_credentials(unittest.TestCase):
 
     def test_get_credentials_NoArgsNoFogbugzrcNoInteractive(self):
         fb_credentials.os.path.expanduser = mock.Mock(return_value='/FolderThatDoesNotExist')
-        ret = fb_credentials.get_credentials(interactive=False)
-        self.assertFalse(ret[0]) #username
-        self.assertFalse(ret[1]) #password
-        self.assertEquals(fb_credentials.os.path.expanduser.call_count, 1)
-
-    def test_get_credentials_NoArgsNoFogbugzrc(self):
-        fb_credentials.os.path.expanduser = mock.Mock(return_value='/FolderThatDoesNotExist')
-        fb_credentials.get_input = mock.Mock(return_value='myName')
-        fb_credentials.getpass.getpass = mock.Mock(return_value='myPwd')
-        ret = fb_credentials.get_credentials()
-        self.assertEquals(ret[0], 'myName') #username
-        self.assertEquals(ret[1], 'myPwd') #password
-    
-    def test_read_fogbugzrc_file(self):
-        ret = fb_credentials.get_credentials(path.join(self.test_dir, '.fogbugzrc'))
-        self.assertEquals(ret[0], 'uName')
-        self.assertEquals(ret[1], 'pwd')
-
-class test_get_token(unittest.TestCase):
-    '''Tests for get_token'''
-
-    def setUp(self):
-        self.test_dir = tempfile.mkdtemp()
-        with open(path.join(self.test_dir, '.fogbugzrc'), 'w') as f:
-            f.write('pref.token = uToken\ndummyLine')
-
-    def tearDown(self):
-        shutil.rmtree(self.test_dir)
-
-    def test_get_token_NoArgs(self):
-        fb_credentials.os.path.expanduser = mock.Mock(return_value='/FolderThatDoesNotExist')
-        ret = fb_credentials.get_token()
+        ret = fb_credentials.get_credential('username', interactive=False)
         self.assertFalse(ret)
         self.assertEquals(fb_credentials.os.path.expanduser.call_count, 1)
 
+    def test_get_credentials_NoArgsNoFogbugzrc_username(self):
+        fb_credentials.os.path.expanduser = mock.Mock(return_value='/FolderThatDoesNotExist')
+        fb_credentials.get_input = mock.Mock(return_value='myName')
+        ret = fb_credentials.get_credential('username')
+        self.assertEquals(ret, 'myName') #username
+    
+    def test_get_credentials_NoArgsNoFogbugzrc_password(self):
+        fb_credentials.os.path.expanduser = mock.Mock(return_value='/FolderThatDoesNotExist')
+        fb_credentials.getpass.getpass = mock.Mock(return_value='myPwd')
+        ret = fb_credentials.get_credential('password')
+        self.assertEquals(ret, 'myPwd') #password
+    
     def test_read_fogbugzrc_file(self):
-        ret = fb_credentials.get_token(path.join(self.test_dir, '.fogbugzrc'))
-        self.assertEquals(ret, 'uToken')
+        ret = fb_credentials.get_credential('username', path.join(self.test_dir, '.fogbugzrc'))
+        self.assertEquals(ret, 'uName')
+    
+    def test_unsupported_credential(self):
+        self.assertRaises(ValueError, fb_credentials.get_credential, 'fakeCred')
