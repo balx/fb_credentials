@@ -24,7 +24,6 @@ def test_FogBugzNoUserNameNorToken(mock_get_credential):
     mock_fogbugz = mock.Mock()
     ret = fb_credentials.FogBugz(mock_fogbugz, 'hostname', storeCredentials=True)
     nose.tools.assert_equals(mock_get_credential.call_count, 3)
-    mock_fogbugz.assert_called_once_with('hostname', token='token')
     ret.logon.assert_called_once_with('username', 'pwd')
     # Also test storeCredentials
     nose.tools.assert_equals(ret.username, 'username')
@@ -36,7 +35,7 @@ def test_FogBugzWithUsernameNoToken():
     ret.logon.assert_called_once_with('uUsername', 'uPassword')
 
 @mock.patch('fb_credentials.validate_token')
-def test_FogBugzWithTokenNoUsername(mock_validate_token):
+def test_FogBugzWithValidToken(mock_validate_token):
     mock_fogbugz = mock.Mock()
     mock_validate_token.return_value = True
     ret = fb_credentials.FogBugz(mock_fogbugz, 'hostname', token='uToken')
@@ -44,7 +43,7 @@ def test_FogBugzWithTokenNoUsername(mock_validate_token):
 
 @mock.patch('fb_credentials.validate_token')
 @mock.patch('fb_credentials.get_credential')
-def test_FogBugzWithTokenNoUsername(mock_validate_token, mock_get_credential):
+def test_FogBugzWithInvalidToken(mock_validate_token, mock_get_credential):
     mock_fogbugz = mock.Mock()
     mock_validate_token.return_value = False
     ret = fb_credentials.FogBugz(mock_fogbugz, 'hostname', token='uToken')

@@ -67,8 +67,8 @@ def validate_token(hostname, token):
         try:
             response = urlopen(url)
             return token in response.read()
-        except Exception as e:
-            print(e)
+        except:
+            print('Failed to use token provided')
     return False
 
 def FogBugz(fbConstructor, hostname, token=None, username=None, password=None, fogbugzrc=None,
@@ -84,31 +84,53 @@ def FogBugz(fbConstructor, hostname, token=None, username=None, password=None, f
         storeCredentials: If active, create attributes token, username and password. This opens the
                           door to using it for login to other system, which is convenient, but the
                           programmer can also do what he wants with the password (which is bad).
+
+        The following is attempted in sequence:
+            1. Use token provided
+            2. Use username provided
+            3. Get token with function get_credential
+            4. Get username and password with function get_credential (interactive=True)
+
         TODO: Support passing a list of args to fbConstructor
     """
     if token and (username or password):
         raise TypeError("If you supply 'token' you cannot supply 'username' or 'password'")
-    if (username and not password) or (not username and password):
-        raise TypeError("You must supply both 'username' and 'password'")
-    if not username:
-        if not token:
-            token = get_credential('token', fogbugzrc, fogbugzPrefix)
+
+    if token and validate_token(hostname, token):
+        fb = connect(fbConstructor, hostname, token=token)
+    elif username:
+        if not password:
+            password = get_credential('password', fogbugzrc, fogbugzPrefix, interactive)
+        fb = connect(fbConstructor, hostname, username=username, password=password)
+    else:
+        token = get_credential('token', fogbugzrc, fogbugzPrefix)
         if validate_token(hostname, token):
-            return fbConstructor(hostname, token=token)
+            fb = connect(fbConstructor, hostname, token=token)
         else:
             username = get_credential('username', fogbugzrc, fogbugzPrefix, interactive)
             password = get_credential('password', fogbugzrc, fogbugzPrefix, interactive)
-            if not username and password: # If still no credentials available, raise
-                raise TypeError("You must provide either 'username' and 'password' or 'token'")
-
-    fb = fbConstructor(hostname, token=token)
-    if username:
-        fb.logon(username, password)
+            fb = connect(fbConstructor, hostname, username=username, password=password)
 
     if storeCredentials:
         fb.token = token
         fb.username = username
         fb.password = password
+
+    return fb
+
+def connect(fb_constructor, hostname, token=None, username=None, password=None):
+    ''' Call constructor fb_constructor and log on'''
+    if bool(token) == bool(username):
+        raise TypeError("If you pass 'token' you cannot supply 'username'")
+
+    if bool(username) != bool(password):
+        raise TypeError("username and password should be set both or none")
+
+    if token:
+        fb = fb_constructor(hostname, token=token)
+    else:
+        fb = fb_constructor(hostname)
+        fb.logon(username, password)
 
     return fb
 
