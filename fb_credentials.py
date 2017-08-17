@@ -66,9 +66,11 @@ def validate_token(hostname, token):
         url = hostname + "/api.asp?cmd=logon&token=" + token
         try:
             response = urlopen(url)
-            return token in response.read()
+            if token in response.read():
+                return True
         except:
-            print('Failed to use token provided')
+            pass # Always catch authentication error and return (other methods may be attempted)
+    print('Failed to use token provided')
     return False
 
 def FogBugz(fbConstructor, hostname, token=None, username=None, password=None, fogbugzrc=None,
