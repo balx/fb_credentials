@@ -82,7 +82,7 @@ class test_get_credentials(unittest.TestCase):
 
     def test_get_credentials_NoArgsNoFogbugzrc(self):
         fb_credentials.os.path.expanduser = mock.Mock(return_value='/FolderThatDoesNotExist')
-        fb_credentials.getInput = mock.Mock(return_value='myName')
+        fb_credentials.get_input = mock.Mock(return_value='myName')
         fb_credentials.getpass.getpass = mock.Mock(return_value='myPwd')
         ret = fb_credentials.get_credentials()
         self.assertEquals(ret[0], 'myName') #username

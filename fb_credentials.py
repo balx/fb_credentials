@@ -18,13 +18,13 @@ except ImportError:
     # Fall back to Python 2's urllib2
     from urllib2 import urlopen
 
-__version__ = (0,2,2)
+__version__ = (0,3,0)
 __version_string__ = '.'.join(str(x) for x in __version__)
 
 __author__ = 'Nicolas Morales'
 __email__ = 'portu.github@gmail.com'
 
-def getInput(prompt):
+def get_input(prompt):
     '''Wrapper around builtin function raw_input in order to mock it in tests'''
     return raw_input(prompt)
 
@@ -51,7 +51,7 @@ def get_credentials(fogbugzrc=None, fogbugzPrefix='', interactive=True):
                 password = res.group(1)
     if interactive:
         if not username:
-            username = getInput('user: ')
+            username = get_input('user: ')
         if not password:
             password = getpass.getpass('password: ')# Same as raw_input but hide what user types
     return username, password
@@ -132,8 +132,6 @@ def FogBugz_cm(fbConstructor, hostname, logoff=False, **kwargs):
     '''Context manager with logOff functionality'''
     fb = FogBugz(fbConstructor, hostname, **kwargs)
     yield fb
-    
+
     if logoff:
         fb.logoff()
-    else:
-        print("Save this token for later: token=%s" % fb._token)
