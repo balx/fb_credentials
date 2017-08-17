@@ -10,7 +10,13 @@ import getpass
 import contextlib
 import os
 import re
-import urllib2
+
+try:
+    # For Python 3.0 and later
+    from urllib.request import urlopen
+except ImportError:
+    # Fall back to Python 2's urllib2
+    from urllib2 import urlopen
 
 __version__ = (0,2,2)
 __version_string__ = '.'.join(str(x) for x in __version__)
@@ -75,7 +81,7 @@ def validate_token(hostname, token):
     """
     url = hostname + "/api.asp?cmd=logon&token=" + token
     try:
-        response = urllib2.urlopen(url)
+        response = urlopen(url)
         return token in response.read()
     except Exception as e:
         print(e)
