@@ -62,6 +62,12 @@ def test_FogBugz_cm(mock_FogBugz):
         pass
     nose.tools.assert_equals(cm.logoff.call_count, 1)
 
+class test_validate_token(unittest.TestCase):
+    '''Tests for validate_token'''
+
+    def test_validate_token_noToken(self):
+        self.assertFalse(fb_credentials.validate_token('host', None))
+
 class test_get_credentials(unittest.TestCase):
     '''Tests for get_credentials'''
 

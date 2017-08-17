@@ -76,14 +76,15 @@ def get_token(fogbugzrc=None, fogbugzPrefix=''):
 def validate_token(hostname, token):
     """ Validate the user token.
 
-        Returns True for a successful validation.
+        Returns True for a successful validation, False otherwise
     """
-    url = hostname + "/api.asp?cmd=logon&token=" + token
-    try:
-        response = urlopen(url)
-        return token in response.read()
-    except Exception as e:
-        print(e)
+    if token:
+        url = hostname + "/api.asp?cmd=logon&token=" + token
+        try:
+            response = urlopen(url)
+            return token in response.read()
+        except Exception as e:
+            print(e)
     return False
 
 def FogBugz(fbConstructor, hostname, token=None, username=None, password=None, fogbugzrc=None,
@@ -108,7 +109,7 @@ def FogBugz(fbConstructor, hostname, token=None, username=None, password=None, f
     if not username:
         if not token:
             token = get_token(fogbugzrc, fogbugzPrefix)
-        if token and validate_token(hostname, token):
+        if validate_token(hostname, token):
             return fbConstructor(hostname, token=token)
         else:
             username, password = get_credentials(fogbugzrc, fogbugzPrefix, interactive)
