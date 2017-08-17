@@ -29,11 +29,11 @@ def get_input(prompt):
     return raw_input(prompt)
 
 def get_credentials(fogbugzrc=None, fogbugzPrefix='', interactive=True):
-    """When credentials are not provided in the constructor, get them from fogbugzrc or prompt user
-       fogbugzrc: Path to fogbugzrc file
-       fogbugzPrefix: prefix for user and password. Useful if the fogbugzrc is used for multiple servers
+    """ When credentials are not provided in the constructor, get them from fogbugzrc or prompt user
+        fogbugzrc: Path to fogbugzrc file
+        fogbugzPrefix: prefix for user and password. Useful if the fogbugzrc is used for multiple servers
                  with different credentials
-       interactive: If credentials not found in fogbugzrc and this is set, prompt the user
+        interactive: If credentials not found in fogbugzrc and this is set, prompt the user
     """
     #Search whether there is an fogbugzrc file. Default: ~/fogbugzrc
     username = None
@@ -57,9 +57,9 @@ def get_credentials(fogbugzrc=None, fogbugzPrefix='', interactive=True):
     return username, password
 
 def get_token(fogbugzrc=None, fogbugzPrefix=''):
-    """When token is not provided in the constructor, get them from fogbugzrc
-       fogbugzrc: Path to fogbugzrc file
-       fogbugzPrefix: prefix for token.
+    """ When token is not provided in the constructor, get them from fogbugzrc
+        fogbugzrc: Path to fogbugzrc file
+        fogbugzPrefix: prefix for token.
     """
     # Search whether there is an fogbugzrc file. Default: ~/.fogbugzrc
     token = None
@@ -74,10 +74,9 @@ def get_token(fogbugzrc=None, fogbugzPrefix=''):
     return token
 
 def validate_token(hostname, token):
-    """
-    Validate the user token.
+    """ Validate the user token.
 
-    Returns True for a successful validation.
+        Returns True for a successful validation.
     """
     url = hostname + "/api.asp?cmd=logon&token=" + token
     try:
@@ -89,18 +88,18 @@ def validate_token(hostname, token):
 
 def FogBugz(fbConstructor, hostname, token=None, username=None, password=None, fogbugzrc=None,
             fogbugzPrefix='', interactive=True, storeCredentials=False):
-    """Calls the constructor specified by fbConstructor (hence, despite this being a function use
+    """ Calls the constructor specified by fbConstructor (hence, despite this being a function use
         CapWords naming convention)
 
-       fbConstructor: Fogbugz constructor class. Typically fogbugz.FogBugz, fborm.FogBugzORM or
+        fbConstructor: Fogbugz constructor class. Typically fogbugz.FogBugz, fborm.FogBugzORM or
                        kiln.Kiln
-       hostname: passed directly to the fbInterface
-       token, username, password: input credentials
-       fogbugzrc, fogbugzPrefix, interactive: Passed to method get_credentials
-       storeCredentials: If active, create attributes token, username and password. This opens the
+        hostname: passed directly to the fbInterface
+        token, username, password: input credentials
+        fogbugzrc, fogbugzPrefix, interactive: Passed to method get_credentials
+        storeCredentials: If active, create attributes token, username and password. This opens the
                           door to using it for login to other system, which is convenient, but the
                           programmer can also do what he wants with the password (which is bad).
-       TODO: Support passing a list of args to fbConstructor
+        TODO: Support passing a list of args to fbConstructor
     """
     if token and (username or password):
         raise TypeError("If you supply 'token' you cannot supply 'username' or 'password'")
@@ -129,7 +128,7 @@ def FogBugz(fbConstructor, hostname, token=None, username=None, password=None, f
 
 @contextlib.contextmanager
 def FogBugz_cm(fbConstructor, hostname, logoff=False, **kwargs):
-    '''Context manager with logOff functionality'''
+    ''' Context manager with logOff functionality'''
     fb = FogBugz(fbConstructor, hostname, **kwargs)
     yield fb
 
