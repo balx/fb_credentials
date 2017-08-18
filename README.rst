@@ -38,3 +38,25 @@ E-mail me
 =========
 
 portu.github@gmail.com
+
+Release Notes
+=============
+
+0.3.0
+~~~~~
+
+New features
+------------
+
+    * Added support for searching for token in configuration file.
+
+API changes
+-----------
+
+    * FogBugz_cm() has option logoff (default False) to turn on log-off when exiting the context manager.
+
+Behavior changes
+----------------
+
+    * Simplified the sequence of credential validation steps (provided token, provided username, get token, get username).
+    * Default configuration file changed from ~/.hgrc to ~/.fogbugzrc.
